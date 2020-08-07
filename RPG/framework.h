@@ -13,3 +13,19 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <vector>
+
+#define WIDTH 1280
+#define HEIGHT 720
+
+#define WIDTH_POSITION 150
+#define HEIGHT_POSITION 0
+
+using namespace std;
+
+#include "GameManager.h"
+
+#include "Scene.h"
+#include "TownScene.h"
+
+#define SAFE_DELETE(X) if(X){delete X; X=nullptr;}

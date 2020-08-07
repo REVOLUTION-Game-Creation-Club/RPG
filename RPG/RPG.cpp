@@ -95,10 +95,21 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
+	hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+	DWORD dwStyle = WS_SYSMENU;
+	HWND hWnd = CreateWindowW(
+		szWindowClass,
+		szTitle,
+		dwStyle,
+		WIDTH_POSITION,
+		HEIGHT_POSITION,
+		WIDTH,
+		HEIGHT,
+		nullptr,
+		nullptr,
+		hInstance,
+		nullptr);
 
    if (!hWnd)
    {
@@ -138,18 +149,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DestroyWindow(hWnd);
                 break;
             default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-            EndPaint(hWnd, &ps);
-        }
-        break;
+				return DefWindowProc(hWnd, message, wParam, lParam);
+			}
+	}
+		break;
+	case WM_CREATE:
+	{
+		GameManager::getInstance()->create(hWnd);
+		SetTimer(hWnd, 1, 17, nullptr);
+	}
+	break;
+	case WM_TIMER:
+	{
+		GameManager::getInstance()->update(17);
+		InvalidateRgn(hWnd, nullptr, false);
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC mainHDC = BeginPaint(hWnd, &ps);
+		HBITMAP GLay = CreateCompatibleBitmap(mainHDC, WIDTH, HEIGHT);
+		HDC GLayDC = CreateCompatibleDC(mainHDC);
+		SelectObject(GLayDC, GLay);
+
+		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+		GameManager::getInstance()->draw(GLayDC);
+
+		BitBlt(mainHDC, 0, 0, WIDTH, HEIGHT, GLayDC, 0, 0, SRCCOPY);
+		DeleteDC(GLayDC);
+		DeleteObject(GLay);
+		EndPaint(hWnd, &ps);
+	}
+    break;
+	case WM_KEYUP:
+	{
+		GameManager::getInstance()->getEventMsg(hWnd, message, wParam, lParam);
+	}
+	break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
